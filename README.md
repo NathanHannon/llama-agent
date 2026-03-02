@@ -1,6 +1,6 @@
 # 🦙 Llama-Agent CLI
 
-**A high-performance, agentic AI coding assistant powered by Meta's Llama 3 models.**
+**A high-performance, agentic AI coding assistant powered by Meta's Llama models.**
 
 Llama-Agent is a command-line interface (CLI) tool designed to bring the power of "agentic" AI to your local development environment. Unlike simple chatbots, Llama-Agent can **interact with your file system**, **read code**, and **execute shell commands** (with permission), making it a versatile companion for debugging, refactoring, and automation.
 
