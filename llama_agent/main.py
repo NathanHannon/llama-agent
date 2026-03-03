@@ -95,7 +95,7 @@ Type [bold cyan]/help[/] for commands or just start chatting.
     while True:
         try:
             user_input = Prompt.ask("[bold blue]You[/]")
-            
+
             if not user_input.strip():
                 continue
 
@@ -114,7 +114,9 @@ Type [bold cyan]/help[/] for commands or just start chatting.
 - [bold green]/exit[/], [bold green]/quit[/]: Exit the application
 - [bold green]/help[/]: Show this help message
 """
-                    console.print(Panel(help_text.strip(), title="Help", border_style="cyan"))
+                    console.print(
+                        Panel(help_text.strip(), title="Help", border_style="cyan")
+                    )
                     continue
                 elif cmd == "/clear":
                     agent.clear_history()
@@ -124,20 +126,34 @@ Type [bold cyan]/help[/] for commands or just start chatting.
                     if not agent.skills:
                         console.print("[yellow]No skills found in ~/.agents/skills[/]")
                     else:
-                        skill_list = "\n".join([f"- [bold]{name}[/]: {meta['description']}" for name, meta in agent.skills.items()])
-                        console.print(Panel(skill_list, title="Available Skills", border_style="magenta"))
+                        skill_list = "\n".join(
+                            [
+                                f"- [bold]{name}[/]: {meta['description']}"
+                                for name, meta in agent.skills.items()
+                            ]
+                        )
+                        console.print(
+                            Panel(
+                                skill_list,
+                                title="Available Skills",
+                                border_style="magenta",
+                            )
+                        )
                     continue
                 elif cmd == "/model":
-                    console.print(f"[bold cyan]Current Model:[/bold cyan] {agent.model}")
+                    console.print(
+                        f"[bold cyan]Current Model:[/bold cyan] {agent.model}"
+                    )
                     continue
-                
+
             with console.status("[bold green]Llama is thinking..."):
                 response = agent.chat(user_input)
-            
+
             console.print(Markdown(response))
         except KeyboardInterrupt:
             console.print("\n[yellow]Goodbye![/]")
             break
+
 
 if __name__ == "__main__":
     app()
