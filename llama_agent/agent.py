@@ -3,6 +3,7 @@ import json
 from openai import OpenAI
 from dotenv import load_dotenv
 from llama_agent.tools import AVAILABLE_TOOLS, TOOL_DEFINITIONS
+from llama_agent.skills import scan_skills
 
 load_dotenv()
 
@@ -29,12 +30,27 @@ class LlamaAgent:
 
         self.model = model_id or os.getenv("AI_MODEL", "llama-3.1-70b-versatile")
         self.client = OpenAI(base_url=self.base_url, api_key=self.api_key)
-        self.messages = [
-            {
-                "role": "system",
-                "content": "You are a professional software engineering assistant. You can read files and run shell commands to help the user. If a tool returns an error, try to fix the issue or explain why it failed.",
-            }
-        ]
+
+        # Load skills and format prompt
+        self.skills = scan_skills()
+        skills_text = ""
+        if self.skills:
+            skills_text = (
+                "\n\nAvailable Agent Skills (use 'read_skill' to load instructions):\n"
+            )
+            for name, meta in self.skills.items():
+                skills_text += f"- {name}: {meta['description']}\n"
+
+        self.system_prompt = {
+            "role": "system",
+            "content": "You are a professional software engineering assistant. You can read files and run shell commands to help the user. If a tool returns an error, try to fix the issue or explain why it failed."
+            + skills_text,
+        }
+        self.messages = [self.system_prompt]
+
+    def clear_history(self):
+        """Resets the conversation history."""
+        self.messages = [self.system_prompt]
 
     def chat(self, user_input):
         self.messages.append({"role": "user", "content": user_input})

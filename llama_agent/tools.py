@@ -1,5 +1,6 @@
 import os
 import subprocess
+from llama_agent.skills import scan_skills
 
 
 def list_files(directory="."):
@@ -30,11 +31,29 @@ def run_shell(command):
         return f"Error: {e}"
 
 
+def read_skill(skill_name):
+    """
+    Reads the content of an installed agent skill (from ~/.agents/skills).
+    Use this when the user asks for a skill by name.
+    """
+    try:
+        skills = scan_skills()
+        if skill_name not in skills:
+            return f"Error: Skill '{skill_name}' not found. Available skills: {', '.join(skills.keys())}"
+
+        path = skills[skill_name]["path"]
+        with open(path, "r", encoding="utf-8") as f:
+            return f.read()
+    except Exception as e:
+        return f"Error reading skill {skill_name}: {e}"
+
+
 # Metadata for tool-calling
 AVAILABLE_TOOLS = {
     "list_files": list_files,
     "read_file": read_file,
     "run_shell": run_shell,
+    "read_skill": read_skill,
 }
 
 TOOL_DEFINITIONS = [
@@ -82,6 +101,23 @@ TOOL_DEFINITIONS = [
                     "command": {"type": "string", "description": "The command to run."}
                 },
                 "required": ["command"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "read_skill",
+            "description": "Reads the instruction content of an installed agent skill.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "skill_name": {
+                        "type": "string",
+                        "description": "The name of the skill to read (e.g. 'file-organizer')",
+                    }
+                },
+                "required": ["skill_name"],
             },
         },
     },
