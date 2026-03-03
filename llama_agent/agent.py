@@ -2,13 +2,13 @@ import os
 import json
 from openai import OpenAI
 from dotenv import load_dotenv
-from tools import AVAILABLE_TOOLS, TOOL_DEFINITIONS
+from llama_agent.tools import AVAILABLE_TOOLS, TOOL_DEFINITIONS
 
 load_dotenv()
 
 
 class LlamaAgent:
-    def __init__(self):
+    def __init__(self, model_id: str = None):
         provider = os.getenv("AI_PROVIDER", "groq").lower()
         if provider == "groq":
             self.base_url = "https://api.groq.com/openai/v1"
@@ -27,7 +27,7 @@ class LlamaAgent:
                 f"Unknown AI_PROVIDER: '{provider}'. Choose from: groq, openrouter, ollama, lmstudio"
             )
 
-        self.model = os.getenv("AI_MODEL", "llama-3.1-70b-versatile")
+        self.model = model_id or os.getenv("AI_MODEL", "llama-3.1-70b-versatile")
         self.client = OpenAI(base_url=self.base_url, api_key=self.api_key)
         self.messages = [
             {

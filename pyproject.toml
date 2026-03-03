@@ -1,0 +1,42 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "llama-agent"
+version = "0.1.0"
+description = "A CLI coding assistant powered by Meta's Llama models"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+authors = [
+    { name = "Nathan" },
+]
+keywords = ["llama", "ai", "cli", "agent", "coding-assistant"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = [
+    "openai",
+    "typer",
+    "rich",
+    "python-dotenv",
+    "prompt_toolkit",
+    "pyfiglet",
+]
+
+[project.scripts]
+llama-agent = "llama_agent.main:app"
+
+[project.urls]
+Homepage = "https://github.com/yourusername/llama-agent"
+Repository = "https://github.com/yourusername/llama-agent"
+Issues = "https://github.com/yourusername/llama-agent/issues"
