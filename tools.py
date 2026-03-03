@@ -4,8 +4,7 @@ import subprocess
 def list_files(directory="."):
     """Lists files in the specified directory."""
     try:
-        return "
-".join(os.listdir(directory))
+        return "\n".join(os.listdir(directory))
     except Exception as e:
         return f"Error: {e}"
 
@@ -23,8 +22,7 @@ def run_shell(command):
         result = subprocess.run(
             command, shell=True, capture_output=True, text=True, timeout=10
         )
-        return f"Stdout: {result.stdout}
-Stderr: {result.stderr}"
+        return f"Stdout: {result.stdout}\nStderr: {result.stderr}"
     except Exception as e:
         return f"Error: {e}"
 
