@@ -1,12 +1,14 @@
 import os
 import subprocess
 
+
 def list_files(directory="."):
     """Lists files in the specified directory."""
     try:
         return "\n".join(os.listdir(directory))
     except Exception as e:
         return f"Error: {e}"
+
 
 def read_file(file_path):
     """Reads the content of a file."""
@@ -15,6 +17,7 @@ def read_file(file_path):
             return f.read()
     except Exception as e:
         return f"Error: {e}"
+
 
 def run_shell(command):
     """Executes a shell command (dangerous, use with caution!)."""
@@ -25,6 +28,7 @@ def run_shell(command):
         return f"Stdout: {result.stdout}\nStderr: {result.stderr}"
     except Exception as e:
         return f"Error: {e}"
+
 
 # Metadata for tool-calling
 AVAILABLE_TOOLS = {
@@ -42,7 +46,10 @@ TOOL_DEFINITIONS = [
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "directory": {"type": "string", "description": "The path to the directory."}
+                    "directory": {
+                        "type": "string",
+                        "description": "The path to the directory.",
+                    }
                 },
             },
         },
@@ -55,7 +62,10 @@ TOOL_DEFINITIONS = [
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "file_path": {"type": "string", "description": "The path to the file."}
+                    "file_path": {
+                        "type": "string",
+                        "description": "The path to the file.",
+                    }
                 },
                 "required": ["file_path"],
             },
