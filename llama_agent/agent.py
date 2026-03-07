@@ -2,10 +2,12 @@ import os
 import json
 from openai import OpenAI
 from dotenv import load_dotenv
+from rich.console import Console
 from llama_agent.tools import AVAILABLE_TOOLS, TOOL_DEFINITIONS, get_tree
 from llama_agent.skills import scan_skills
 
 load_dotenv()
+internal_console = Console()
 
 
 class LlamaAgent:
@@ -47,7 +49,7 @@ class LlamaAgent:
                 f"\n\nCURRENT PROJECT STRUCTURE:\n{self.project_tree}\n"
                 "\nCRITICAL RULES:\n"
                 "1. **Autonomous Verification**: After creating or modifying a file, you MUST use 'check_syntax' to verify it. Do not report success until verification passes.\n"
-                "2. **Thought before Action**: Explain your plan clearly in plain text before calling tools.\n"
+                "2. **Thought before Action**: Explain your plan clearly in plain text before calling tools. This reasoning will be shown to the user.\n"
                 "3. **Contextual Accuracy**: Always use the exact file paths shown in the project structure above.\n"
                 "4. **No Hallucinations**: Do not claim to have executed a tool unless you actually triggered it.\n"
                 "5. **Fix Failures**: If verification or a tool fails, analyze the output and attempt a fix immediately."
@@ -71,7 +73,6 @@ class LlamaAgent:
                     tool_choice="auto",
                 )
             except Exception as e:
-                # If tool-calling fails, we try a non-tool recovery turn
                 if "400" in str(e):
                     return "⚠️ Groq Tool-Calling Error. I'll try to provide a text-only response or you can try rephrasing."
                 return f"⚠️ API Error: {str(e)}"
@@ -79,11 +80,15 @@ class LlamaAgent:
             response_message = response.choices[0].message
             self.messages.append(response_message)
 
+            # Display the model's reasoning/thoughts if present
+            if response_message.content:
+                internal_console.print(f"\n[dim italic]Thought: {response_message.content}[/]")
+
             # Check if there are tool calls
             if not response_message.tool_calls:
                 return response_message.content or "Task completed."
 
-            # Process all requested tool calls in parallel
+            # Process all requested tool calls
             for tool_call in response_message.tool_calls:
                 function_name = tool_call.function.name
                 
@@ -93,6 +98,8 @@ class LlamaAgent:
                     function_to_call = AVAILABLE_TOOLS[function_name]
                     try:
                         function_args = json.loads(tool_call.function.arguments)
+                        # Visual indicator for tool execution
+                        internal_console.print(f"  [bold cyan]🔧 Tool Call:[/] {function_name}({function_args})")
                         tool_output = function_to_call(**function_args)
                     except Exception as e:
                         tool_output = f"Error executing tool: {str(e)}. Ensure you provided all required arguments."
@@ -106,4 +113,4 @@ class LlamaAgent:
                     }
                 )
             
-            # Continue the loop to let the model react to the tool outputs
+            # The loop continues to let the model react to the results...

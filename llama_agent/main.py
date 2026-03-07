@@ -3,6 +3,7 @@ import re
 import numpy as np
 import typer
 import pyfiglet
+import importlib.util
 from rich.console import Console
 from rich.markdown import Markdown
 from rich.panel import Panel
@@ -20,7 +21,7 @@ FUSION_BLUE = "#0081FB"
 FUSION_PURPLE = "#7101FF"
 FUSION_CYAN = "#00F2FE"
 
-# Theme definitions
+# Base Theme definitions
 THEMES = {
     "fusion": Theme({
         "info": FUSION_CYAN,
@@ -50,6 +51,31 @@ THEMES = {
         "bot": "bold white",
     })
 }
+
+def load_external_themes():
+    """Loads additional themes from themes.py if it exists."""
+    themes_path = os.path.join(os.getcwd(), "themes.py")
+    if not os.path.exists(themes_path):
+        return
+    
+    try:
+        spec = importlib.util.spec_from_file_location("themes", themes_path)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        
+        # Look for variables ending in _THEME
+        for attr in dir(module):
+            if attr.endswith("_THEME"):
+                theme_name = attr.replace("_THEME", "").lower()
+                theme_obj = getattr(module, attr)
+                if isinstance(theme_obj, Theme):
+                    THEMES[theme_name] = theme_obj
+    except Exception as e:
+        # Silently fail if themes.py is broken
+        pass
+
+# Initialize external themes
+load_external_themes()
 
 # Global state for theme management
 current_theme_name = "fusion"
@@ -90,8 +116,12 @@ def print_logo(theme_name):
         console.print(get_gradient_text(llama_text, FUSION_BLUE, FUSION_CYAN))
         console.print(Text(agent_text, style=f"bold {FUSION_CYAN}"))
     else:
-        brand_style = f"bold {THEMES[theme_name].styles['info'].color.name}" if hasattr(THEMES[theme_name].styles['info'], 'color') else "bold white"
-        # Simplification for non-fusion themes
+        # Use info color for non-fusion themes
+        brand_style = "bold white"
+        if theme_name in THEMES:
+            # Fallback style
+            brand_style = "bold green" if theme_name == "matrix" else "bold blue"
+            
         console.print(Text(llama_text, style=brand_style))
         console.print(Text(agent_text, style="bold white"))
     
@@ -101,10 +131,13 @@ def print_logo(theme_name):
 @app.command()
 def start(
     model: str = typer.Option(None, help="Model ID to use."),
-    theme: str = typer.Option("fusion", help="Initial theme (fusion, matrix, classic)"),
+    theme: str = typer.Option("fusion", help="Initial theme (fusion, matrix, classic, emerald)"),
 ):
     """Starts the interactive Llama CLI with high-fidelity UI."""
     global console, current_theme_name
+    
+    # Reload to catch runtime changes
+    load_external_themes()
     
     current_theme_name = theme if theme in THEMES else "fusion"
     console = Console(theme=THEMES[current_theme_name])
@@ -122,13 +155,12 @@ def start(
 
     while True:
         try:
-            # Safely look up user style from the theme
+            # Theme-specific prompt color
             user_style = "bold cyan"
-            if current_theme_name in THEMES:
-                # We use the key directly since rich Themes don't easily expose styles back as strings
-                if current_theme_name == "fusion": user_style = f"bold {FUSION_CYAN}"
-                elif current_theme_name == "matrix": user_style = "green"
-                elif current_theme_name == "classic": user_style = "bold blue"
+            if current_theme_name == "fusion": user_style = f"bold {FUSION_CYAN}"
+            elif current_theme_name == "matrix": user_style = "green"
+            elif current_theme_name == "classic": user_style = "bold blue"
+            elif current_theme_name == "emerald": user_style = "bold light_green"
 
             user_input = Prompt.ask(f"[{user_style}]YOU[/]")
 
@@ -149,7 +181,7 @@ def start(
                         console = Console(theme=THEMES[current_theme_name])
                         console.print(f"[success]Theme switched to {current_theme_name}![/]")
                     else:
-                        console.print(f"[warning]Usage: /theme <{', '.join(THEMES.keys())}>[/]")
+                        console.print(f"[warning]Available themes: {', '.join(THEMES.keys())}[/]")
                     continue
                 
                 elif cmd == "/history":
@@ -193,6 +225,7 @@ def start(
             bot_style = "bold white"
             if current_theme_name == "fusion": bot_style = f"bold {FUSION_PURPLE}"
             elif current_theme_name == "matrix": bot_style = "bold white"
+            elif current_theme_name == "emerald": bot_style = "bold green"
             
             console.print(f"\n[{bot_style}]LLAMA[/]")
             console.print(Markdown(response))

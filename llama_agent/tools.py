@@ -125,6 +125,38 @@ def check_syntax(file_path):
         return f"Syntax Error in {file_path}: {str(e)}"
 
 
+def run_tests():
+    """Autodetects project type and runs the appropriate test suite."""
+    try:
+        # 1. Check for Python (pytest)
+        if os.path.exists("pytest.ini") or os.path.exists("tests") or any(f.endswith(".py") for f in os.listdir(".")):
+            # Try pytest first, fallback to unittest
+            try:
+                res = subprocess.run(["pytest", "--version"], capture_output=True)
+                if res.returncode == 0:
+                    cmd = "pytest"
+                else:
+                    cmd = "python -m unittest discover"
+            except:
+                cmd = "python -m unittest discover"
+        
+        # 2. Check for Node.js
+        elif os.path.exists("package.json"):
+            cmd = "npm test"
+            
+        # 3. Check for Rust
+        elif os.path.exists("Cargo.toml"):
+            cmd = "cargo test"
+            
+        else:
+            return "Error: Could not autodetect project type for testing."
+
+        result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=60)
+        return f"Test Results ({cmd}):\nExit Code {result.returncode}\n{result.stdout}\n{result.stderr}"
+    except Exception as e:
+        return f"Error running tests: {e}"
+
+
 def remember_fact(fact):
     """Saves a fact to memory."""
     try:
@@ -160,6 +192,7 @@ AVAILABLE_TOOLS = {
     "git_info": git_info,
     "run_shell": run_shell,
     "check_syntax": check_syntax,
+    "run_tests": run_tests,
     "remember_fact": remember_fact,
     "get_memories": get_memories,
 }
@@ -225,6 +258,13 @@ TOOL_DEFINITIONS = [
                 "properties": {"file_path": {"type": "string"}},
                 "required": ["file_path"]
             }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "run_tests",
+            "description": "Autodetect project type and run all tests."
         }
     },
     {
