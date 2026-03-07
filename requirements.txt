@@ -3,3 +3,7 @@ typer
 rich
 python-dotenv
 prompt_toolkit
+numpy
+requests
+pyfiglet
+pexpect
