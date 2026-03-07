@@ -43,13 +43,14 @@ class LlamaAgent:
             "role": "system",
             "content": (
                 "You are an expert autonomous software engineer. "
-                "You have access to tools to read, write, and search code. "
+                "You use tools to solve complex coding tasks. "
                 f"\n\nCURRENT PROJECT STRUCTURE:\n{self.project_tree}\n"
                 "\nCRITICAL RULES:\n"
-                "1. **Action Oriented**: If you claim to do something (like 'I will create themes.py'), you MUST use the corresponding tool immediately.\n"
-                "2. **Path Accuracy**: Always use the exact file paths shown in the project structure above.\n"
-                "3. **Required Arguments**: You MUST provide all arguments defined in the tool schema.\n"
-                "4. **No Hallucinations**: Do not report success until a tool actually returns a success message."
+                "1. **Autonomous Verification**: After creating or modifying a file, you MUST use 'check_syntax' to verify it. Do not report success until verification passes.\n"
+                "2. **Thought before Action**: Explain your plan clearly in plain text before calling tools.\n"
+                "3. **Contextual Accuracy**: Always use the exact file paths shown in the project structure above.\n"
+                "4. **No Hallucinations**: Do not claim to have executed a tool unless you actually triggered it.\n"
+                "5. **Fix Failures**: If verification or a tool fails, analyze the output and attempt a fix immediately."
                 + skills_text
             ),
         }

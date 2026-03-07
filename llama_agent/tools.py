@@ -72,10 +72,8 @@ def grep_search(pattern, directory="."):
     """Searches for a text pattern in a directory."""
     try:
         if os.name == 'nt':
-            # Windows findstr
             cmd = f'findstr /S /N /I /C:"{pattern}" "{directory}\\*"'
         else:
-            # Unix grep
             cmd = f'grep -rnEi "{pattern}" "{directory}" --exclude-dir=.git --exclude-dir=venv'
             
         result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=15)
@@ -117,6 +115,16 @@ def run_shell(command, input_text=None):
         return f"Error running command: {e}"
 
 
+def check_syntax(file_path):
+    """Checks if a Python file has valid syntax without running it."""
+    try:
+        import py_compile
+        py_compile.compile(file_path, doraise=True)
+        return f"Syntax check passed for {file_path}"
+    except Exception as e:
+        return f"Syntax Error in {file_path}: {str(e)}"
+
+
 def remember_fact(fact):
     """Saves a fact to memory."""
     try:
@@ -151,6 +159,7 @@ AVAILABLE_TOOLS = {
     "web_fetch": web_fetch,
     "git_info": git_info,
     "run_shell": run_shell,
+    "check_syntax": check_syntax,
     "remember_fact": remember_fact,
     "get_memories": get_memories,
 }
@@ -203,6 +212,18 @@ TOOL_DEFINITIONS = [
                     "input_text": {"type": "string"}
                 },
                 "required": ["command"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "check_syntax",
+            "description": "Verify that a Python file has no syntax errors.",
+            "parameters": {
+                "type": "object",
+                "properties": {"file_path": {"type": "string"}},
+                "required": ["file_path"]
             }
         }
     },
